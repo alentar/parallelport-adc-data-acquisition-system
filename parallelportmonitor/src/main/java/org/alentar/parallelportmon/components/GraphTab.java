@@ -1,19 +1,18 @@
 package org.alentar.parallelportmon.components;
 
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 public class GraphTab extends Tab {
     private String title;
@@ -75,11 +74,10 @@ public class GraphTab extends Tab {
         super.setContent(vBox);
 
         setOnCloseRequest(event -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to close this tab ?", ButtonType.NO, ButtonType.YES);
             alert.setTitle("Confirmation");
-            alert.setContentText("Do you really want to close this tab ?");
             alert.showAndWait().ifPresent(buttonType -> {
-                if (buttonType == ButtonType.CANCEL) event.consume();
+                if (buttonType == ButtonType.NO) event.consume();
             });
         });
     }
