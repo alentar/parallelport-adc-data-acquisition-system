@@ -3,3 +3,4 @@ build
 out
 .idea
 .code
+.DS_Store
