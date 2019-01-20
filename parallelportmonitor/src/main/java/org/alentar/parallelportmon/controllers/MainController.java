@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TabPane;
-import org.alentar.parallelportmon.components.GraphTab;
 
 public class MainController {
     public Button btnConnect;
@@ -17,7 +16,6 @@ public class MainController {
     @FXML
     private void initialize(){
         updateStatus(isConnected);
-        tabPane.getTabs().add(new GraphTab("Sensor 1","Sensor1 reading", "Time", "Voltage"));
     }
 
     private void updateStatus(boolean isConnected){

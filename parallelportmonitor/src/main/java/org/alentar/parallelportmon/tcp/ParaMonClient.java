@@ -1,7 +1,6 @@
 package org.alentar.parallelportmon.tcp;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,21 +23,22 @@ public class ParaMonClient implements Closeable {
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    public void writeLine(String msg){
+    public synchronized void writeLine(String msg) {
         writer.println(msg);
     }
 
-    public String readLine() throws IOException{
+    public synchronized String readLine() throws IOException {
         return reader.readLine();
     }
 
-    public int getADCReading(int chan) throws IOException{
+    public synchronized int getADCReading(int chan) throws IOException {
         String command = "CHAN" + chan + ";";
         writeLine(command);
         String reply = readLine();
 
         try {
             String[] tokens = reply.split("=");
+            System.out.println(command);
             return parseInt(tokens[1]);
         }catch (NumberFormatException ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getMessage());
@@ -46,13 +46,13 @@ public class ParaMonClient implements Closeable {
         }
     }
 
-    public void shutdownServer() throws IOException{
+    public synchronized void shutdownServer() throws IOException {
         writeLine(Commands.SHUTDOWN.toString() + ";");
         close();
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         if (socket != null && !socket.isClosed()) {
             socket.close();
         }
