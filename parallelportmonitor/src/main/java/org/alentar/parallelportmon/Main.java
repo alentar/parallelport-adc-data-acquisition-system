@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.alentar.parallelportmon.manager.ResourceManager;
 
 public class Main extends Application {
     @Override
@@ -14,6 +15,12 @@ public class Main extends Application {
         Scene scene = new Scene(root, 900, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        ResourceManager.getInstance().dispose();
     }
 
     public static void main(String[] args) {

@@ -1,5 +1,6 @@
 package org.alentar.parallelportmon.components;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.CategoryAxis;
@@ -13,12 +14,21 @@ import javafx.scene.control.Tab;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.alentar.parallelportmon.eventbus.EventBus;
+import org.alentar.parallelportmon.eventbus.Subscriber;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class GraphTab extends Tab {
     private String title;
     private String name;
     private String xLabel;
     private String yLabel;
+
+    private final EventBus eventBus = EventBus.getInstance();
+    int channel;
+    private Subscriber subscriber;
 
     private final CategoryAxis xAxis = new CategoryAxis();
     private final NumberAxis yAxis = new NumberAxis();
@@ -36,9 +46,13 @@ public class GraphTab extends Tab {
     long numPoints;
     double cumulativeSum;
 
-    public GraphTab(String title, String name, String xLabel, String yLabel) {
+    public GraphTab(int channel, String title, String name, String xLabel, String yLabel) {
         super(title);
 
+        String topic = Integer.toString(channel);
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+
+        this.channel = channel;
         this.title = title;
         this.xLabel = xLabel;
         this.yLabel = yLabel;
@@ -66,6 +80,7 @@ public class GraphTab extends Tab {
         averageLabel.setPadding(new Insets(5, 20, 5, 20));
         hBar.getChildren().addAll(minLabel, maxLabel, averageLabel);
 
+        lineChart.setStyle("-fx-stroke: blue ");
         xAxis.setAnimated(false);
         yAxis.setAnimated(false);
 
@@ -73,11 +88,32 @@ public class GraphTab extends Tab {
         vBox.getChildren().addAll(lineChart, hBar);
         super.setContent(vBox);
 
+        subscriber = (t, d) -> {
+            if (t.equals(topic)) {
+                int val = (int) d;
+                double voltage = (double) val * 4.069 / 4096;
+                Date date = new Date();
+
+                Platform.runLater(() -> {
+                    series.getData().add(new XYChart.Data<>(simpleDateFormat.format(date), voltage));
+                    if (series.getData().size() > 20) series.getData().remove(0);
+                });
+            }
+        };
+
+        // subscribe to channel for ui updates
+        eventBus.subscribe(Integer.toString(channel), subscriber);
+
         setOnCloseRequest(event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to close this tab ?", ButtonType.NO, ButtonType.YES);
             alert.setTitle("Confirmation");
             alert.showAndWait().ifPresent(buttonType -> {
                 if (buttonType == ButtonType.NO) event.consume();
+                else {
+                    eventBus.unsubscribe(Integer.toString(channel), subscriber);
+                    System.out.println("Unsubscribed");
+                }
+
             });
         });
     }
