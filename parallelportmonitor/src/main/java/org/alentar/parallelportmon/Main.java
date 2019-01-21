@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.alentar.parallelportmon.adc.MAX186ADC;
 import org.alentar.parallelportmon.manager.ResourceManager;
 
 public class Main extends Application {
@@ -15,6 +16,9 @@ public class Main extends Application {
         Scene scene = new Scene(root, 900, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // setup ADC to MAX186
+        ResourceManager.getInstance().setAdc(new MAX186ADC());
     }
 
     @Override

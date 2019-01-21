@@ -1,4 +1,4 @@
-package org.alentar.parallelportmon.dialogs;
+package org.alentar.parallelportmon.dialogs.connection;
 
 public class ConnectionData {
     String host;

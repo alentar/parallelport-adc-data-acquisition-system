@@ -3,27 +3,25 @@ package org.alentar.parallelportmon.stream;
 import java.util.concurrent.TimeUnit;
 
 public class ChannelStream extends Stream {
-    private TimeUnit updateIntervalUnit = TimeUnit.SECONDS;
-    private int updateInterval = 1;
+    private TimeUnit updateIntervalUnit;
+    private long updateInterval;
     private int channel;
     private String name;
     private String topic;
+    private long initialDelay;
 
-    public ChannelStream(int channel, String name, TimeUnit updateIntervalUnit, int updateInterval) {
+    public ChannelStream(int channel, String name, TimeUnit updateIntervalUnit, long updateInterval, long initialDelay) {
         this.updateIntervalUnit = updateIntervalUnit;
         this.updateInterval = updateInterval;
         this.channel = channel;
+        this.initialDelay = initialDelay;
+        this.topic = String.format("/channel/%d/interval/%d/timeunit/%s", channel, updateInterval, updateIntervalUnit.toString());
         this.name = name;
-        this.topic = String.format("/channel-%d/%s/%d-%s", channel, name, updateInterval, updateIntervalUnit.toString());
     }
 
     @Override
     public String getTopic() {
         return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
     }
 
     public TimeUnit getUpdateIntervalUnit() {
@@ -34,7 +32,7 @@ public class ChannelStream extends Stream {
         this.updateIntervalUnit = updateIntervalUnit;
     }
 
-    public int getUpdateInterval() {
+    public long getUpdateInterval() {
         return updateInterval;
     }
 
@@ -56,5 +54,21 @@ public class ChannelStream extends Stream {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public long getInitialDelay() {
+        return initialDelay;
+    }
+
+    @Override
+    public String toString() {
+        return "ChannelStream{" +
+                "updateIntervalUnit=" + updateIntervalUnit +
+                ", updateInterval=" + updateInterval +
+                ", channel=" + channel +
+                ", name='" + name + '\'' +
+                ", topic='" + topic + '\'' +
+                ", initialDelay=" + initialDelay +
+                '}';
     }
 }

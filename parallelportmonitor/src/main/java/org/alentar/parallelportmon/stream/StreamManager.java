@@ -7,48 +7,59 @@ import org.alentar.parallelportmon.tcp.ParaMonClient;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class StreamManager implements Closeable {
     final EventBus eventBus = EventBus.getInstance();
     ParaMonClient client;
     ScheduledExecutorService scheduledExecutorService;
     HashMap<String, ScheduledFuture<?>> futureHashMap = new HashMap<>();
+    Set<ChannelStream> channelStreams = new HashSet<>();
 
     public StreamManager(ParaMonClient client) {
         this.client = client;
         this.scheduledExecutorService = Executors.newScheduledThreadPool(10);
     }
 
-    public void scheduleChannelStream(int chan, long initialDelay, long period, TimeUnit timeUnit) {
-        String topic = Integer.toString(chan);
-        if (!futureHashMap.containsKey(topic)) {
+    public void scheduleChannelStream(ChannelStream channelStream) {
+        if (channelStream == null) return;
+
+        if (!futureHashMap.containsKey(channelStream.getTopic())) {
             ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
                 try {
-                    int adc = client.getADCReading(chan);
-                    eventBus.publish(topic, adc);
+                    // STOPSHIP: 2019-01-21 TODO check channel stream is enabled or disabled?
+                    int adc = client.getADCReading(channelStream.getChannel());
+                    eventBus.publish(channelStream.getTopic(), adc);
                 } catch (IOException e) {
                     eventBus.publish(Events.Disconnect.toString(), e.getMessage());
                 }
-            }, initialDelay, period, timeUnit);
+            }, channelStream.getInitialDelay(), channelStream.getUpdateInterval(), channelStream.getUpdateIntervalUnit());
 
-            futureHashMap.put(topic, future);
+            futureHashMap.put(channelStream.getTopic(), future);
+            channelStreams.add(channelStream);
         }
     }
 
-    public void cancelChannelStream(int chan) {
-        String topic = Integer.toString(chan);
+    public void cancelChannelStream(ChannelStream channelStream) {
+        String topic = channelStream.getTopic();
         if (futureHashMap.containsKey(topic)) {
             futureHashMap.get(topic).cancel(true);
             futureHashMap.remove(topic);
         }
+
+        channelStreams.remove(channelStream);
     }
 
     public ParaMonClient getClient() {
         return client;
+    }
+
+    public Set<ChannelStream> getChannelStreams() {
+        return channelStreams;
     }
 
     @Override

@@ -2,8 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.alentar.parallelportmon.controllers.MainController">
@@ -51,10 +50,30 @@
               <items>
                   <Button fx:id="btnConnect" mnemonicParsing="false" onAction="#connect" text="Connect">
                       <graphic>
-                          <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true"
-                                     fx:id="connectButtonImageView">
+                          <ImageView fx:id="connectButtonImageView" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true"
+                                     preserveRatio="true">
                               <image>
                                   <Image url="@/icons/icons8-connected-100.png"/>
+                              </image>
+                          </ImageView>
+                      </graphic>
+                  </Button>
+                  <Button fx:id="addStreamButton" mnemonicParsing="false" onAction="#openAddNewStreamDialog"
+                          text="Add Stream">
+                      <graphic>
+                          <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                              <image>
+                                  <Image url="@/icons/icons8-plus-96.png"/>
+                              </image>
+                          </ImageView>
+                      </graphic>
+                  </Button>
+                  <Button fx:id="addGraphViewButton" mnemonicParsing="false" onAction="#openAddNewGraphViewDialog"
+                          text="Add Graph View">
+                      <graphic>
+                          <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                              <image>
+                                  <Image url="@/icons/icons8-chart-96.png"/>
                               </image>
                           </ImageView>
                       </graphic>

@@ -1,8 +1,11 @@
-package org.alentar.parallelportmon.dialogs;
+package org.alentar.parallelportmon.dialogs.connection;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
@@ -14,11 +17,15 @@ public class ConnectionDialog extends Dialog<ConnectionData> {
         ButtonType connectButtonType = new ButtonType("Connect", ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(connectButtonType, ButtonType.CANCEL);
 
+        Image image = new Image("icons/icons8-connected-100.png", 64.0, 64.0, true, true);
+        setGraphic(new ImageView(image));
+
         // Create the username and password labels and fields.
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.setPadding(new Insets(20, 10, 10, 10));
+        grid.setAlignment(Pos.CENTER);
 
         TextField host = new TextField();
         host.setPromptText("Set host name (default: 127.0.0.1)");

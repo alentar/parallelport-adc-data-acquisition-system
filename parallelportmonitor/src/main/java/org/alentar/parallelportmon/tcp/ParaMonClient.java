@@ -38,7 +38,6 @@ public class ParaMonClient implements Closeable {
 
         try {
             String[] tokens = reply.split("=");
-            System.out.println(command);
             return parseInt(tokens[1]);
         }catch (NumberFormatException ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getMessage());

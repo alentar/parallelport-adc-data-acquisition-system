@@ -19,15 +19,19 @@ import org.alentar.parallelportmon.eventbus.Subscriber;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class GraphTab extends Tab {
+public class GraphViewTab extends Tab {
+    private String topic;
     private String title;
-    private String name;
+    private String seriesName;
     private String xLabel;
     private String yLabel;
+    private int windowSize;
+    private String xTickPattern;
 
     private final EventBus eventBus = EventBus.getInstance();
-    int channel;
     private Subscriber subscriber;
 
     private final CategoryAxis xAxis = new CategoryAxis();
@@ -46,17 +50,18 @@ public class GraphTab extends Tab {
     long numPoints;
     double cumulativeSum;
 
-    public GraphTab(int channel, String title, String name, String xLabel, String yLabel) {
+    public GraphViewTab(String topic, String title, String seriesName, String xLabel, String yLabel, String xTickPattern, int windowSize) {
         super(title);
 
-        String topic = Integer.toString(channel);
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(xTickPattern);
 
-        this.channel = channel;
+        this.topic = topic;
         this.title = title;
         this.xLabel = xLabel;
         this.yLabel = yLabel;
-        this.name = name;
+        this.seriesName = seriesName;
+        this.xTickPattern = xTickPattern;
+        this.windowSize = windowSize;
 
         vBox = new VBox();
         vBox.setFillWidth(true);
@@ -64,7 +69,7 @@ public class GraphTab extends Tab {
         xAxis.setLabel(xLabel);
         yAxis.setLabel(yLabel);
         lineChart.setTitle(title);
-        series.setName(name);
+        series.setName(seriesName);
         lineChart.getData().add(series);
 
         //setup labels
@@ -80,7 +85,6 @@ public class GraphTab extends Tab {
         averageLabel.setPadding(new Insets(5, 20, 5, 20));
         hBar.getChildren().addAll(minLabel, maxLabel, averageLabel);
 
-        lineChart.setStyle("-fx-stroke: blue ");
         xAxis.setAnimated(false);
         yAxis.setAnimated(false);
 
@@ -89,20 +93,20 @@ public class GraphTab extends Tab {
         super.setContent(vBox);
 
         subscriber = (t, d) -> {
-            if (t.equals(topic)) {
+            if (t.equals(this.topic)) {
                 int val = (int) d;
                 double voltage = (double) val * 4.069 / 4096;
                 Date date = new Date();
 
                 Platform.runLater(() -> {
-                    series.getData().add(new XYChart.Data<>(simpleDateFormat.format(date), voltage));
-                    if (series.getData().size() > 20) series.getData().remove(0);
+                    series.getData().add(new XYChart.Data<>(simpleDateFormat.format(date), val));
+                    if (series.getData().size() > windowSize) series.getData().remove(0);
                 });
             }
         };
 
-        // subscribe to channel for ui updates
-        eventBus.subscribe(Integer.toString(channel), subscriber);
+        // subscribe to channelStream for ui updates
+        eventBus.subscribe(this.topic, subscriber);
 
         setOnCloseRequest(event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to close this tab ?", ButtonType.NO, ButtonType.YES);
@@ -110,8 +114,8 @@ public class GraphTab extends Tab {
             alert.showAndWait().ifPresent(buttonType -> {
                 if (buttonType == ButtonType.NO) event.consume();
                 else {
-                    eventBus.unsubscribe(Integer.toString(channel), subscriber);
-                    System.out.println("Unsubscribed");
+                    eventBus.unsubscribe(topic, subscriber);
+                    Logger.getGlobal().log(Level.INFO, "Unsubscribed: " + subscriber);
                 }
 
             });
@@ -122,13 +126,13 @@ public class GraphTab extends Tab {
         return title;
     }
 
-    public void setName(String name){
-        this.name = name;
-        series.setName(name);
+    public String getSeriesName() {
+        return seriesName;
     }
 
-    public String getName() {
-        return name;
+    public void setSeriesName(String seriesName) {
+        this.seriesName = seriesName;
+        series.setName(seriesName);
     }
 
     public void setTitle(String title) {
