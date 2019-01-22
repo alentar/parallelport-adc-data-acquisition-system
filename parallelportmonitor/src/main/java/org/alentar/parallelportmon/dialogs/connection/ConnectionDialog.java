@@ -12,7 +12,7 @@ import javafx.scene.layout.Priority;
 public class ConnectionDialog extends Dialog<ConnectionData> {
     public ConnectionDialog() {
         setTitle("Open new connection");
-        setHeaderText("Connect to Alentar Parellel Port Data Server");
+        setHeaderText("Connect to Alentar Parallel Port Data Server");
 
         ButtonType connectButtonType = new ButtonType("Connect", ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(connectButtonType, ButtonType.CANCEL);
