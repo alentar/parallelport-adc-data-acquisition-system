@@ -14,8 +14,13 @@ import javafx.scene.control.Tab;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.alentar.parallelportmon.adc.ADC;
+import org.alentar.parallelportmon.dialogs.CommonDialogs;
 import org.alentar.parallelportmon.eventbus.EventBus;
 import org.alentar.parallelportmon.eventbus.Subscriber;
+import org.alentar.parallelportmon.manager.ResourceManager;
+import org.alentar.parallelportmon.scripts.ScriptManager;
+import org.alentar.parallelportmon.scripts.TemplateScript;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,6 +35,7 @@ public class GraphViewTab extends Tab {
     private String yLabel;
     private int windowSize;
     private String xTickPattern;
+    ADC adc;
 
     private final EventBus eventBus = EventBus.getInstance();
     private Subscriber subscriber;
@@ -45,12 +51,13 @@ public class GraphViewTab extends Tab {
     private Label maxLabel;
     private Label averageLabel;
     private HBox hBar;
+    private TemplateScript templateScript;
 
     // moving average
     long numPoints;
     double cumulativeSum;
 
-    public GraphViewTab(String topic, String title, String seriesName, String xLabel, String yLabel, String xTickPattern, int windowSize) {
+    public GraphViewTab(String topic, String title, String seriesName, String xLabel, String yLabel, String xTickPattern, int windowSize, TemplateScript templateScript) {
         super(title);
 
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(xTickPattern);
@@ -62,6 +69,9 @@ public class GraphViewTab extends Tab {
         this.seriesName = seriesName;
         this.xTickPattern = xTickPattern;
         this.windowSize = windowSize;
+        this.templateScript = templateScript;
+
+        adc = ResourceManager.getInstance().getAdc();
 
         vBox = new VBox();
         vBox.setFillWidth(true);
@@ -92,14 +102,29 @@ public class GraphViewTab extends Tab {
         vBox.getChildren().addAll(lineChart, hBar);
         super.setContent(vBox);
 
+        try {
+            ScriptManager.getInstance().registerMethod(this, "y", templateScript.getScript());
+        } catch (Exception e) {
+            CommonDialogs.ExceptionAlert(e).showAndWait();
+        }
+
         subscriber = (t, d) -> {
             if (t.equals(this.topic)) {
                 int val = (int) d;
-                double voltage = (double) val * 4.069 / 4096;
+                //double voltage = (double) val * 4.069 / 4096;
                 Date date = new Date();
+                Object dat = (double) 0;
 
+                try {
+                    dat = ScriptManager.getInstance().invokeMethod(this, "y", val, adc.getInternalReferenceVoltage(), adc.getResolution());
+                    System.out.println(dat);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Number finalDat = (Number) dat;
                 Platform.runLater(() -> {
-                    series.getData().add(new XYChart.Data<>(simpleDateFormat.format(date), val));
+                    series.getData().add(new XYChart.Data<>(simpleDateFormat.format(date), finalDat));
                     if (series.getData().size() > windowSize) series.getData().remove(0);
                 });
             }
@@ -120,6 +145,8 @@ public class GraphViewTab extends Tab {
 
             });
         });
+
+        this.hashCode();
     }
 
     public String getTitle() {

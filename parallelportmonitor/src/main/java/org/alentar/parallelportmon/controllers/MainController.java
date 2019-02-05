@@ -14,16 +14,16 @@ import org.alentar.parallelportmon.dialogs.streams.NewChannelStreamDialog;
 import org.alentar.parallelportmon.dialogs.views.NewGraphViewDialog;
 import org.alentar.parallelportmon.manager.ResourceManager;
 import org.alentar.parallelportmon.stream.StreamManager;
-import org.alentar.parallelportmon.tcp.ParaMonClient;
+import org.alentar.parallelportmon.tcp.DataServerClient;
 
 public class MainController {
     final Image connectedImage = new Image("icons/icons8-connected-100.png");
-    public Button btnConnect;
     final Image disconnectedImage = new Image("icons/icons8-disconnected-100.png");
     final Color RED = new Color(1, 0, .1, 1);
     final Color GREEN = new Color(.2, 1, 0, 1);
-    public Label lblStatus;
 
+    public Label lblStatus;
+    public Button btnConnect;
     public TabPane tabPane;
     public ImageView connectButtonImageView;
     public Circle connectionIndicator;
@@ -68,9 +68,9 @@ public class MainController {
             ConnectionDialog connectionDialog = new ConnectionDialog();
             connectionDialog.showAndWait().ifPresent(connectionData -> {
                 try {
-                    ParaMonClient paraMonClient = new ParaMonClient(connectionData.getHost(), connectionData.getPort());
-                    StreamManager streamManager = new StreamManager(paraMonClient);
-                    ResourceManager.getInstance().setStreamManager(streamManager);
+                    DataServerClient dataServerClient = new DataServerClient(connectionData.getHost(), connectionData.getPort());
+                    StreamManager streamManager = new StreamManager(dataServerClient);
+                    ResourceManager.getInstance().registerStreamManager(streamManager);
                     updateIsConnected(true);
                 } catch (Exception ex) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);

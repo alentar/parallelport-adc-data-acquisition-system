@@ -6,7 +6,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.alentar.parallelportmon.adc.MAX186ADC;
+import org.alentar.parallelportmon.dialogs.CommonDialogs;
 import org.alentar.parallelportmon.manager.ResourceManager;
+import org.alentar.parallelportmon.scripts.ScriptManager;
+import org.alentar.parallelportmon.scripts.TemplateManager;
+
+import java.io.IOException;
 
 public class Main extends Application {
     @Override
@@ -16,6 +21,14 @@ public class Main extends Application {
         Scene scene = new Scene(root, 900, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // Load templates
+        try {
+            ScriptManager.getInstance();
+            TemplateManager.getInstance().loadScriptFromResources("y_val");
+        } catch (IOException ex) {
+            CommonDialogs.ExceptionAlert(ex).showAndWait();
+        }
 
         // setup ADC to MAX186
         ResourceManager.getInstance().setAdc(new MAX186ADC());

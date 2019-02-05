@@ -2,7 +2,7 @@ package org.alentar.parallelportmon.stream;
 
 import org.alentar.parallelportmon.eventbus.EventBus;
 import org.alentar.parallelportmon.eventbus.Events;
-import org.alentar.parallelportmon.tcp.ParaMonClient;
+import org.alentar.parallelportmon.tcp.DataServerClient;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,12 +15,12 @@ import java.util.concurrent.ScheduledFuture;
 
 public class StreamManager implements Closeable {
     final EventBus eventBus = EventBus.getInstance();
-    ParaMonClient client;
+    DataServerClient client;
     ScheduledExecutorService scheduledExecutorService;
     HashMap<String, ScheduledFuture<?>> futureHashMap = new HashMap<>();
     Set<ChannelStream> channelStreams = new HashSet<>();
 
-    public StreamManager(ParaMonClient client) {
+    public StreamManager(DataServerClient client) {
         this.client = client;
         this.scheduledExecutorService = Executors.newScheduledThreadPool(10);
     }
@@ -54,7 +54,7 @@ public class StreamManager implements Closeable {
         channelStreams.remove(channelStream);
     }
 
-    public ParaMonClient getClient() {
+    public DataServerClient getClient() {
         return client;
     }
 

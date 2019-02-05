@@ -7,14 +7,14 @@ import java.util.logging.Logger;
 
 import static java.lang.Integer.parseInt;
 
-public class ParaMonClient implements Closeable {
+public class DataServerClient implements Closeable {
     private Socket socket;
     private int port;
     private String  serverAddr;
     PrintWriter writer;
     BufferedReader reader;
 
-    public ParaMonClient(String serverAddr, int port) throws Exception{
+    public DataServerClient(String serverAddr, int port) throws Exception {
         this.serverAddr = serverAddr;
         this.port = port;
         this.socket = new Socket(serverAddr, port);

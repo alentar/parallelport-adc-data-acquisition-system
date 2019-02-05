@@ -6,12 +6,12 @@ public class TCPMultiThreadingTest {
     @Test
     public void testMulti() {
         try {
-            ParaMonClient paraMonClient = new ParaMonClient("127.0.0.1", 2335);
+            DataServerClient dataServerClient = new DataServerClient("127.0.0.1", 2335);
 
             Thread t1 = new Thread(() -> {
                 try {
                     for (int i = 0; i < 10; i++) {
-                        System.out.println(paraMonClient.getADCReading(1));
+                        System.out.println(dataServerClient.getADCReading(1));
                         Thread.sleep(5);
                     }
 
@@ -23,7 +23,7 @@ public class TCPMultiThreadingTest {
             Thread t2 = new Thread(() -> {
                 try {
                     for (int i = 0; i < 10; i++) {
-                        System.out.println(paraMonClient.getADCReading(0));
+                        System.out.println(dataServerClient.getADCReading(0));
                         //Thread.sleep(10);
                     }
 
