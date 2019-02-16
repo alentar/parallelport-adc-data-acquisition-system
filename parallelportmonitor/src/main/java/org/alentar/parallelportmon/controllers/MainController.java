@@ -17,10 +17,10 @@ import org.alentar.parallelportmon.stream.StreamManager;
 import org.alentar.parallelportmon.tcp.DataServerClient;
 
 public class MainController {
-    final Image connectedImage = new Image("icons/icons8-connected-100.png");
-    final Image disconnectedImage = new Image("icons/icons8-disconnected-100.png");
-    final Color RED = new Color(1, 0, .1, 1);
-    final Color GREEN = new Color(.2, 1, 0, 1);
+    private final Image connectedImage = new Image("icons/icons8-connected-100.png");
+    private final Image disconnectedImage = new Image("icons/icons8-disconnected-100.png");
+    private final Color RED = new Color(1, 0, .1, 1);
+    private final Color GREEN = new Color(.2, 1, 0, 1);
 
     public Label lblStatus;
     public Button btnConnect;
@@ -111,6 +111,7 @@ public class MainController {
         NewGraphViewDialog newGraphViewDialog = new NewGraphViewDialog();
         newGraphViewDialog.showAndWait().ifPresent(graphViewTab -> {
             tabPane.getTabs().add(graphViewTab);
+            tabPane.getSelectionModel().select(graphViewTab);
         });
     }
 }

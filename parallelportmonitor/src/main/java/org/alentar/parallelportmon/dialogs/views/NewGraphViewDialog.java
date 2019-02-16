@@ -86,6 +86,10 @@ public class NewGraphViewDialog extends Dialog<GraphViewTab> {
         grid.add(new Label("Customized Y-Axis"), 0, 8);
         grid.add(customScript, 1, 8);
 
+        CheckBox showAverage = new CheckBox("Show average");
+        showAverage.setSelected(true);
+        grid.add(showAverage, 1, 9);
+
         getDialogPane().setContent(grid);
         Platform.runLater(topicComboBox::requestFocus);
 
@@ -103,7 +107,8 @@ public class NewGraphViewDialog extends Dialog<GraphViewTab> {
                 String scriptText = customScript.getText();
                 TemplateScript templateScript = TemplateManager.getInstance().getTemplateScript("y_val");
                 templateScript.inject("__fn__block__injectable__", scriptText);
-                return new GraphViewTab(topic, title, seriesName, xLabel, yLabel, xTickFormat, windowSize, templateScript);
+                boolean showAverageLine = showAverage.isSelected();
+                return new GraphViewTab(topic, title, seriesName, xLabel, yLabel, xTickFormat, windowSize, templateScript, showAverageLine);
             }
 
             return null;

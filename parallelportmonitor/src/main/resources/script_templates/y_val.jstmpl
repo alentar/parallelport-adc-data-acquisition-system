@@ -1,6 +1,6 @@
-function(val, vRef, resolution){
+function(reading, vRef, resolution){
     var y;
-    var v = val*vRef/resolution;
+    var v = reading*vRef/resolution;
     y = v;
 
     __fn__block__injectable__
