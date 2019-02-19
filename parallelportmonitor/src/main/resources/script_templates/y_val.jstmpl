@@ -1,0 +1,9 @@
+function(reading, vRef, resolution){
+    var y;
+    var v = reading*vRef/resolution;
+    y = v;
+
+    __fn__block__injectable__
+
+    return y;
+}

@@ -11,17 +11,24 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
+                <MenuItem mnemonicParsing="false" text="Close" onAction="#closeApplication"/>
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Edit">
             <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
+                <MenuItem mnemonicParsing="false" fx:id="menuItemEditGraphView" onAction="#openEditGraphView"
+                          text="Graph View..."/>
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Streams">
+                <items>
+                    <MenuItem mnemonicParsing="false" fx:id="menuItemOpenStreamManager" onAction="#openStreamManager"
+                              text="Streams Manager..."/>
+                </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+                <MenuItem mnemonicParsing="false" text="About" onAction="#showAboutDialog"/>
             </items>
           </Menu>
         </menus>

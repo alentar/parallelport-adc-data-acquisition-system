@@ -53,7 +53,7 @@ public class ResourceManager {
         return streamManager;
     }
 
-    public void setStreamManager(StreamManager streamManager) {
+    public void registerStreamManager(StreamManager streamManager) {
         if (this.streamManager == null) {
             this.streamManager = streamManager;
             registerForDispose(this.streamManager);

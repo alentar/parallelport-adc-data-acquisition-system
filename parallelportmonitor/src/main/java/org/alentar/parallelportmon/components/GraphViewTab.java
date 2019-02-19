@@ -7,15 +7,17 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.alentar.parallelportmon.adc.ADC;
+import org.alentar.parallelportmon.dialogs.CommonDialogs;
 import org.alentar.parallelportmon.eventbus.EventBus;
 import org.alentar.parallelportmon.eventbus.Subscriber;
+import org.alentar.parallelportmon.manager.ResourceManager;
+import org.alentar.parallelportmon.scripts.ScriptManager;
+import org.alentar.parallelportmon.scripts.TemplateScript;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,6 +32,9 @@ public class GraphViewTab extends Tab {
     private String yLabel;
     private int windowSize;
     private String xTickPattern;
+    private boolean showAverage;
+
+    private ADC adc;
 
     private final EventBus eventBus = EventBus.getInstance();
     private Subscriber subscriber;
@@ -37,7 +42,10 @@ public class GraphViewTab extends Tab {
     private final CategoryAxis xAxis = new CategoryAxis();
     private final NumberAxis yAxis = new NumberAxis();
     private final LineChart<String , Number> lineChart = new LineChart<>(xAxis, yAxis);
-    XYChart.Series<String, Number> series = new XYChart.Series<>();
+    private XYChart.Series<String, Number> series = new XYChart.Series<>();
+
+    // average line
+    private XYChart.Series<String, Number> avgSeries = new XYChart.Series<>();
 
     private VBox vBox;
 
@@ -45,12 +53,21 @@ public class GraphViewTab extends Tab {
     private Label maxLabel;
     private Label averageLabel;
     private HBox hBar;
+    private Button buttonOptions;
+
+    // templates
+    private TemplateScript templateScript;
 
     // moving average
-    long numPoints;
-    double cumulativeSum;
+    private boolean init = true;
+    private long numPoints;
+    private double cumulativeSum;
+    private double min;
+    private double max;
+    private double average;
 
-    public GraphViewTab(String topic, String title, String seriesName, String xLabel, String yLabel, String xTickPattern, int windowSize) {
+    public GraphViewTab(String topic, String title, String seriesName, String xLabel, String yLabel, String xTickPattern,
+                        int windowSize, TemplateScript templateScript, boolean showAverage) {
         super(title);
 
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(xTickPattern);
@@ -62,13 +79,23 @@ public class GraphViewTab extends Tab {
         this.seriesName = seriesName;
         this.xTickPattern = xTickPattern;
         this.windowSize = windowSize;
+        this.templateScript = templateScript;
+        this.showAverage = showAverage;
+
+        adc = ResourceManager.getInstance().getAdc();
 
         vBox = new VBox();
         vBox.setFillWidth(true);
         vBox.setSpacing(1.5);
+
+        // options button
+        buttonOptions = new Button("Options");
+
         xAxis.setLabel(xLabel);
         yAxis.setLabel(yLabel);
         lineChart.setTitle(title);
+        lineChart.setAnimated(false);
+
         series.setName(seriesName);
         lineChart.getData().add(series);
 
@@ -76,6 +103,7 @@ public class GraphViewTab extends Tab {
         minLabel = new Label("Min: N/A");
         maxLabel = new Label("Max: N/A");
         averageLabel = new Label("Average: N/A");
+
         hBar = new HBox();
         hBar.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -88,20 +116,36 @@ public class GraphViewTab extends Tab {
         xAxis.setAnimated(false);
         yAxis.setAnimated(false);
 
+        if (showAverage) initializeAverageLine();
+
         VBox.setVgrow(lineChart, Priority.ALWAYS);
         vBox.getChildren().addAll(lineChart, hBar);
         super.setContent(vBox);
 
+        setTemplateScript(templateScript);
+
         subscriber = (t, d) -> {
             if (t.equals(this.topic)) {
                 int val = (int) d;
-                double voltage = (double) val * 4.069 / 4096;
                 Date date = new Date();
+                Number value;
 
-                Platform.runLater(() -> {
-                    series.getData().add(new XYChart.Data<>(simpleDateFormat.format(date), val));
-                    if (series.getData().size() > windowSize) series.getData().remove(0);
-                });
+                try {
+                    value = (Number) ScriptManager.getInstance().invokeMethod(this, "y", val, adc.getInternalReferenceVoltage(), adc.getResolution());
+                    Platform.runLater(() -> {
+                        updateStats((Double) value);
+
+                        XYChart.Data<String, Number> rawValue = new XYChart.Data<>(simpleDateFormat.format(date), value);
+                        XYChart.Data<String, Number> averageValue = new XYChart.Data<>(simpleDateFormat.format(date), average);
+
+                        series.getData().add(rawValue);
+                        avgSeries.getData().add(averageValue);
+                        updateChartWindow(series);
+                        updateChartWindow(avgSeries);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         };
 
@@ -117,7 +161,6 @@ public class GraphViewTab extends Tab {
                     eventBus.unsubscribe(topic, subscriber);
                     Logger.getGlobal().log(Level.INFO, "Unsubscribed: " + subscriber);
                 }
-
             });
         });
     }
@@ -158,21 +201,89 @@ public class GraphViewTab extends Tab {
         yAxis.setLabel(yLabel);
     }
 
-    public void updateMin(double min){
+    public String getTopic() {
+        return topic;
+    }
+
+    public int getWindowSize() {
+        return windowSize;
+    }
+
+    public void setWindowSize(int windowSize) {
+        this.windowSize = windowSize;
+    }
+
+    public boolean isShowAverage() {
+        return showAverage;
+    }
+
+    public void setShowAverage(boolean showAverage) {
+        this.showAverage = showAverage;
+
+        if (showAverage) {
+            lineChart.getData().add(avgSeries);
+        } else {
+            lineChart.getData().remove(avgSeries);
+        }
+    }
+
+    public TemplateScript getTemplateScript() {
+        return templateScript;
+    }
+
+    private void setTemplateScript(TemplateScript templateScript) {
+        this.templateScript = templateScript;
+
+        try {
+            ScriptManager.getInstance().registerMethod(this, "y", templateScript.getScript());
+        } catch (Exception e) {
+            CommonDialogs.ExceptionAlert(e).showAndWait();
+        }
+    }
+
+    private void updateStats(double val) {
+        if (!init) {
+            this.min = Math.min(this.min, val);
+            this.max = Math.max(this.max, val);
+            this.average = getSeriesAverage(val);
+        } else {
+            this.min = this.max = val;
+            init = false;
+        }
+
+        updateLabels();
+    }
+
+    private void updateLabels() {
+        updateMinLabel();
+        updateMaxLabel();
+        updateAverageLabel();
+    }
+
+    private void updateMinLabel() {
         minLabel.setText(String.format("Min: %.3f", min));
     }
 
-    public void updateMax(double max){
+    private void updateMaxLabel() {
         maxLabel.setText(String.format("Max: %.3f", max));
     }
 
-    public void updateAverage(double average){
+    private void updateAverageLabel() {
         averageLabel.setText(String.format("Average: %.3f", average));
     }
 
-    public double getSeriesAverage(double newPoint){
+    private double getSeriesAverage(double newPoint) {
         cumulativeSum += newPoint;
         ++numPoints;
         return cumulativeSum/numPoints;
+    }
+
+    private void updateChartWindow(XYChart.Series series) {
+        if (series.getData().size() > windowSize) series.getData().remove(0);
+    }
+
+    private void initializeAverageLine() {
+        avgSeries.setName("Average");
+        lineChart.getData().add(avgSeries);
     }
 }

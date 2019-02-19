@@ -9,6 +9,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.alentar.parallelportmon.components.GraphViewTab;
 import org.alentar.parallelportmon.manager.ResourceManager;
+import org.alentar.parallelportmon.scripts.TemplateManager;
+import org.alentar.parallelportmon.scripts.TemplateScript;
 import org.alentar.parallelportmon.stream.ChannelStream;
 
 import java.util.Set;
@@ -68,15 +70,31 @@ public class NewGraphViewDialog extends Dialog<GraphViewTab> {
         TextField xTickFormatTextField = new TextField();
         xTickFormatTextField.setPromptText("Customize X-Axis(JAVA date formats are supported) default: HH:mm:ss");
         xTickFormatTextField.setText("HH:mm:ss");
-        grid.add(new Label("Ticking format:"), 0, 5);
-        grid.add(xTickFormatTextField, 1, 5);
+        grid.add(new Label("Ticking format:"), 0, 6);
+        grid.add(xTickFormatTextField, 1, 6);
 
         Spinner<Integer> windowSpinner = new Spinner<>();
         SpinnerValueFactory<Integer> spinnerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, 20);
         windowSpinner.setValueFactory(spinnerValueFactory);
-        grid.add(new Label("Window Size(Data Points):"), 0, 6);
-        grid.add(windowSpinner, 1, 6);
+        grid.add(new Label("Window Size(Data Points):"), 0, 7);
+        grid.add(windowSpinner, 1, 7);
 
+        TextArea customScript = new TextArea();
+        customScript.setPromptText("Plot y-axis using a custom merit.\r" +
+                "You can use common math functions to customize your y-axis.\r" +
+                "Example: y = log10(v) - 1;\r" +
+                "Available parameters:\r" +
+                "\treading: Raw value from ADC\r" +
+                "\tv: Voltage is calculated using reading*vRef/resolution\r" +
+                "\tvRef: Reference voltage of ADC\r" +
+                "\tresolution: Resolution of ADC\r" +
+                "\r\rThe language used here is javascript");
+        grid.add(new Label("Customized Y-Axis:"), 0, 8);
+        grid.add(customScript, 1, 8);
+
+        CheckBox showAverage = new CheckBox("Show average");
+        showAverage.setSelected(true);
+        grid.add(showAverage, 1, 9);
 
         getDialogPane().setContent(grid);
         Platform.runLater(topicComboBox::requestFocus);
@@ -92,7 +110,11 @@ public class NewGraphViewDialog extends Dialog<GraphViewTab> {
                 String yLabel = yLabelTextField.getText();
                 String xTickFormat = xTickFormatTextField.getText().trim().isEmpty() ? "HH:mm:ss" : xTickFormatTextField.getText().trim();
                 int windowSize = windowSpinner.getValue();
-                return new GraphViewTab(topic, title, seriesName, xLabel, yLabel, xTickFormat, windowSize);
+                String scriptText = customScript.getText();
+                TemplateScript templateScript = TemplateManager.getInstance().getTemplateScript("y_val");
+                templateScript.inject("__fn__block__injectable__", scriptText);
+                boolean showAverageLine = showAverage.isSelected();
+                return new GraphViewTab(topic, title, seriesName, xLabel, yLabel, xTickFormat, windowSize, templateScript, showAverageLine);
             }
 
             return null;
