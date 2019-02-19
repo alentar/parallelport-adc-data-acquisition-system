@@ -149,4 +149,11 @@ public class MainController {
         if (tab instanceof GraphViewTab)
             new EditGraphViewDialog((GraphViewTab) tab).showAndWait();
     }
+
+    public void showAboutDialog(ActionEvent actionEvent) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Alentar PPDAS Client v1.0.0\nCopyright 2019 Alentar Org.\nLicense: MIT", ButtonType.OK);
+        alert.setTitle("About");
+        alert.setHeaderText("About...");
+        alert.showAndWait();
+    }
 }
