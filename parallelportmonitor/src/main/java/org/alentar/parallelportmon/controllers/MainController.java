@@ -8,10 +8,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import org.alentar.parallelportmon.components.GraphViewTab;
 import org.alentar.parallelportmon.dialogs.CommonDialogs;
 import org.alentar.parallelportmon.dialogs.connection.ConnectionDialog;
 import org.alentar.parallelportmon.dialogs.streams.NewChannelStreamDialog;
 import org.alentar.parallelportmon.dialogs.streams.manager.StreamManagerDialog;
+import org.alentar.parallelportmon.dialogs.views.EditGraphViewDialog;
 import org.alentar.parallelportmon.dialogs.views.NewGraphViewDialog;
 import org.alentar.parallelportmon.manager.ResourceManager;
 import org.alentar.parallelportmon.stream.StreamManager;
@@ -30,12 +32,21 @@ public class MainController {
     public Circle connectionIndicator;
     public Button addStreamButton;
     public Button addGraphViewButton;
+    public MenuItem menuItemOpenStreamManager;
+    public MenuItem menuItemEditGraphView;
 
     private boolean isConnected = false;
 
     @FXML
     private void initialize() {
         updateIsConnected(isConnected);
+
+        menuItemEditGraphView.setDisable(true);
+
+        tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue instanceof GraphViewTab) menuItemEditGraphView.setDisable(false);
+            else menuItemEditGraphView.setDisable(true);
+        });
     }
 
     private void updateIsConnected(boolean isConnected) {
@@ -44,6 +55,7 @@ public class MainController {
         updateConnectButton(isConnected);
         updateAddStreamButton(isConnected);
         updateAddGraphViewButton(isConnected);
+        updateMenuItemOpenStreamManager(isConnected);
     }
 
     private void updateStatusLabel(boolean isConnected) {
@@ -62,6 +74,10 @@ public class MainController {
 
     private void updateAddGraphViewButton(boolean isConnected) {
         addGraphViewButton.setDisable(!isConnected);
+    }
+
+    private void updateMenuItemOpenStreamManager(boolean isConnected) {
+        menuItemOpenStreamManager.setDisable(!isConnected);
     }
 
     public void connect(ActionEvent actionEvent) {
@@ -119,5 +135,18 @@ public class MainController {
     public void openStreamManager(ActionEvent actionEvent) {
         new StreamManagerDialog()
                 .showAndWait();
+    }
+
+    public void closeApplication(ActionEvent actionEvent) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure do you want to exit?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(buttonType -> {
+            if (buttonType == ButtonType.YES) Platform.exit();
+        });
+    }
+
+    public void openEditGraphView(ActionEvent actionEvent) {
+        Tab tab = tabPane.getSelectionModel().getSelectedItem();
+        if (tab instanceof GraphViewTab)
+            new EditGraphViewDialog((GraphViewTab) tab).showAndWait();
     }
 }

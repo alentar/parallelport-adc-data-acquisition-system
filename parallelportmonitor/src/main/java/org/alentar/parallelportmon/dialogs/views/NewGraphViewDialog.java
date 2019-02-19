@@ -80,10 +80,16 @@ public class NewGraphViewDialog extends Dialog<GraphViewTab> {
         grid.add(windowSpinner, 1, 7);
 
         TextArea customScript = new TextArea();
-        customScript.setPromptText("Plot y-axis using a custom merit.\n You can use common math functions to customize your y-axis.\n" +
-                "Example: y = log10(v) - 1;\n" +
-                "The language used here is javascript");
-        grid.add(new Label("Customized Y-Axis"), 0, 8);
+        customScript.setPromptText("Plot y-axis using a custom merit.\r" +
+                "You can use common math functions to customize your y-axis.\r" +
+                "Example: y = log10(v) - 1;\r" +
+                "Available parameters:\r" +
+                "\treading: Raw value from ADC\r" +
+                "\tv: Voltage is calculated using reading*vRef/resolution\r" +
+                "\tvRef: Reference voltage of ADC\r" +
+                "\tresolution: Resolution of ADC\r" +
+                "\r\rThe language used here is javascript");
+        grid.add(new Label("Customized Y-Axis:"), 0, 8);
         grid.add(customScript, 1, 8);
 
         CheckBox showAverage = new CheckBox("Show average");

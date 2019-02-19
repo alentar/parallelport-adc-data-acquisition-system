@@ -205,26 +205,6 @@ public class GraphViewTab extends Tab {
         return topic;
     }
 
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public String getxLabel() {
-        return xLabel;
-    }
-
-    public void setxLabel(String xLabel) {
-        this.xLabel = xLabel;
-    }
-
-    public String getyLabel() {
-        return yLabel;
-    }
-
-    public void setyLabel(String yLabel) {
-        this.yLabel = yLabel;
-    }
-
     public int getWindowSize() {
         return windowSize;
     }
@@ -239,13 +219,19 @@ public class GraphViewTab extends Tab {
 
     public void setShowAverage(boolean showAverage) {
         this.showAverage = showAverage;
+
+        if (showAverage) {
+            lineChart.getData().add(avgSeries);
+        } else {
+            lineChart.getData().remove(avgSeries);
+        }
     }
 
     public TemplateScript getTemplateScript() {
         return templateScript;
     }
 
-    public void setTemplateScript(TemplateScript templateScript) {
+    private void setTemplateScript(TemplateScript templateScript) {
         this.templateScript = templateScript;
 
         try {
@@ -296,15 +282,8 @@ public class GraphViewTab extends Tab {
         if (series.getData().size() > windowSize) series.getData().remove(0);
     }
 
-    public void initializeAverageLine() {
-        avgSeries.getData().clear();
+    private void initializeAverageLine() {
         avgSeries.setName("Average");
         lineChart.getData().add(avgSeries);
-        showAverage = true;
-    }
-
-    public void hideAverageLine() {
-        showAverage = false;
-        lineChart.getData().remove(avgSeries);
     }
 }
