@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <pthread.h>
+#include <unistd.h>
 #include <adc_driver.h>
 
 #define MAX 1024

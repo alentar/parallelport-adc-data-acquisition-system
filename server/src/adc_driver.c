@@ -22,7 +22,7 @@ int ch5_DIN[8] = {1, 1, 0, 1, 1, 1, 1, 0};
 int ch6_DIN[8] = {1, 1, 1, 0, 1, 1, 1, 0};
 int ch7_DIN[8] = {1, 1, 1, 1, 1, 1, 1, 0};
 
-void lp_init(short num)
+void lp_init(short lp_num)
 { // initialize the port
 #ifdef __linux__
     switch (lp_num)
