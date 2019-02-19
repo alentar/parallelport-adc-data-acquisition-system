@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/io.h>
+#include <stdlib.h>
 #include <sys/resource.h>
 
 #define lp0   0x378       /* lp (LPT) base addresses. */
