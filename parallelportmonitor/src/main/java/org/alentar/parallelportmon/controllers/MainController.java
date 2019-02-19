@@ -11,6 +11,7 @@ import javafx.scene.shape.Circle;
 import org.alentar.parallelportmon.dialogs.CommonDialogs;
 import org.alentar.parallelportmon.dialogs.connection.ConnectionDialog;
 import org.alentar.parallelportmon.dialogs.streams.NewChannelStreamDialog;
+import org.alentar.parallelportmon.dialogs.streams.manager.StreamManagerDialog;
 import org.alentar.parallelportmon.dialogs.views.NewGraphViewDialog;
 import org.alentar.parallelportmon.manager.ResourceManager;
 import org.alentar.parallelportmon.stream.StreamManager;
@@ -113,5 +114,10 @@ public class MainController {
             tabPane.getTabs().add(graphViewTab);
             tabPane.getSelectionModel().select(graphViewTab);
         });
+    }
+
+    public void openStreamManager(ActionEvent actionEvent) {
+        new StreamManagerDialog()
+                .showAndWait();
     }
 }

@@ -19,6 +19,11 @@
               <MenuItem mnemonicParsing="false" text="Delete" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Streams">
+                <items>
+                    <MenuItem mnemonicParsing="false" onAction="#openStreamManager" text="Streams Manager..."/>
+                </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
               <MenuItem mnemonicParsing="false" text="About" />

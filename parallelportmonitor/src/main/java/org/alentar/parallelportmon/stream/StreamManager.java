@@ -14,11 +14,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 public class StreamManager implements Closeable {
-    final EventBus eventBus = EventBus.getInstance();
-    DataServerClient client;
-    ScheduledExecutorService scheduledExecutorService;
-    HashMap<String, ScheduledFuture<?>> futureHashMap = new HashMap<>();
-    Set<ChannelStream> channelStreams = new HashSet<>();
+    private final EventBus eventBus = EventBus.getInstance();
+    private DataServerClient client;
+    private ScheduledExecutorService scheduledExecutorService;
+    private HashMap<String, ScheduledFuture<?>> futureHashMap = new HashMap<>();
+    private Set<ChannelStream> channelStreams = new HashSet<>();
 
     public StreamManager(DataServerClient client) {
         this.client = client;
@@ -31,9 +31,15 @@ public class StreamManager implements Closeable {
         if (!futureHashMap.containsKey(channelStream.getTopic())) {
             ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
                 try {
-                    // STOPSHIP: 2019-01-21 TODO check channel stream is enabled or disabled?
-                    int adc = client.getADCReading(channelStream.getChannel());
-                    eventBus.publish(channelStream.getTopic(), adc);
+                    switch (channelStream.getState()) {
+                        case RUNNING:
+                            int adc = client.getADCReading(channelStream.getChannel());
+                            eventBus.publish(channelStream.getTopic(), adc);
+                            break;
+                        case PAUSED:
+                        default:
+                            break;
+                    }
                 } catch (IOException e) {
                     eventBus.publish(Events.Disconnect.toString(), e.getMessage());
                 }
@@ -41,10 +47,11 @@ public class StreamManager implements Closeable {
 
             futureHashMap.put(channelStream.getTopic(), future);
             channelStreams.add(channelStream);
+            eventBus.publish(StreamManagerTopics.onChannelAdded.toString(), channelStream);
         }
     }
 
-    public void cancelChannelStream(ChannelStream channelStream) {
+    public void removeChannelStream(ChannelStream channelStream) {
         String topic = channelStream.getTopic();
         if (futureHashMap.containsKey(topic)) {
             futureHashMap.get(topic).cancel(true);
@@ -52,6 +59,7 @@ public class StreamManager implements Closeable {
         }
 
         channelStreams.remove(channelStream);
+        eventBus.publish(StreamManagerTopics.onChannelRemoved.toString(), channelStream);
     }
 
     public DataServerClient getClient() {
