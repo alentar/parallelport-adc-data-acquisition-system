@@ -24,7 +24,6 @@ int count; // used for clock data in or out
 #define DIN1_SCLK1_CS1 0x07
 #define all_low 0x00
 
-#define SINGLE_ENDED 1
 #define DIFFERENTIAL 0
 
 void lp_init(short num); // initialize the port
