@@ -8,13 +8,18 @@ import java.util.logging.Logger;
 
 public class EventBus {
     private static EventBus eventBus;
-    ConcurrentHashMap<String, Set<Subscriber>> subscribers = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Set<Subscriber>> subscribers = new ConcurrentHashMap<>();
 
     public static EventBus getInstance() {
         if (eventBus == null) eventBus = new EventBus();
         return eventBus;
     }
 
+    /**
+     * Subscribe to a topic
+     * @param topic Interested topic
+     * @param subscriber Subscriber to handle data
+     */
     public synchronized void subscribe(String topic, Subscriber subscriber) {
         if (subscribers.containsKey(topic)) {
             subscribers.get(topic).add(subscriber);
@@ -25,6 +30,11 @@ public class EventBus {
         Logger.getGlobal().log(Level.INFO, subscriber + " subscribed to topic: " + topic);
     }
 
+    /**
+     * Unsubscribe a subscriber from a particular topic
+     * @param topic Topic to unsubscribe
+     * @param subscriber Subscriber to unsubscribe
+     */
     public synchronized void unsubscribe(String topic, Subscriber subscriber) {
         if (subscribers.containsKey(topic)) {
             Set<Subscriber> subscriberSet = subscribers.get(topic);
@@ -33,6 +43,11 @@ public class EventBus {
         }
     }
 
+    /**
+     * Publish to a topic
+     * @param topic Topic to publish
+     * @param data Data to propagate
+     */
     public synchronized void publish(String topic, Object data) {
         if (!subscribers.containsKey(topic))
             subscribers.put(topic, new HashSet<>());

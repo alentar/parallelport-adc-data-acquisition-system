@@ -24,7 +24,7 @@ public class StreamManagerDialog extends Dialog<Void> {
         VBox vBox = new VBox();
         HBox hBox = new HBox();
 
-        setTitle("Streams Editor");
+        setTitle("Streams Manager");
         setHeaderText("Manage streams in the system\nStreams allows you to receive data from ADC system.");
         ImageView iconImageView = new ImageView(new Image("icons/icons8-icons8-480.png", 64.0, 64.0, true, true));
         setGraphic(iconImageView);

@@ -16,6 +16,11 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+all: clean lp_tty_start server
+
+lp_tty_start:
+	$(CC) -o lp_tty_start lp_tty_start.c
+
 server: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
