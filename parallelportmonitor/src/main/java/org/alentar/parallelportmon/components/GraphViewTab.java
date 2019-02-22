@@ -221,6 +221,7 @@ public class GraphViewTab extends Tab {
         this.showAverage = showAverage;
 
         if (showAverage) {
+            avgSeries.getData().clear();
             lineChart.getData().add(avgSeries);
         } else {
             lineChart.getData().remove(avgSeries);
